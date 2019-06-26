@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>pdf demo</title>
+		<link rel="stylesheet" type="text/css" href="web/text_layer_builder.css"/>
+		<script src="build/pdf.js" type="text/javascript" charset="utf-8"></script>
+		<script src="build/pdf.worker.js" type="text/javascript" charset="utf-8"></script>
+		<script src="web/text_layer_builder.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>		
+		<!-- <canvas id="pdf-canvas" width="" height=""></canvas> -->
+		<div id="container"></div>
+		
+	</body>
+	<script type="text/javascript">
+		var url="book/PHP和MySQL WEb 5th.pdf";
+		// PDFJS.getDocument(url).then((pdf) => {
+		// 	console.log(pdf.pdfInfo);
+		// 	return pdf.getPage(1);
+		// }).then((page) => {
+		// 	console.log(window.screen.height);
+		// 	var a = window.screen.height;
+		// 	var b = window.screen.width;
+		// 	console.log(window.screen.width);
+		// 	var scale = b/a;
+		// 	var viewport = page.getViewport(scale);
+		// 	var canvas = document.getElementById('pdf-canvas');
+		// 	var context = canvas.getContext('2d');
+		// 	canvas.height = viewport.height;
+		// 	canvas.width = viewport.width;
+		// 	
+		// 	var renderContext = {
+		// 		canvasContext : context,
+		// 		viewport :viewport
+		// 	};
+		// 	page.render(renderContext);
+		// })
+		var container, pageDiv;
+
+function getPDF(url) {
+    PDFJS.getDocument(url).then((pdf) => {
+			console.log(pdf.pdfInfo);
+        pdfDoc = pdf;
+        container = document.getElementById('container');
+        for (var i = 1; i<= pdf.numPages; i++) {
+            renderPDF(i);
+        }
+    })
+}
+
+function renderPDF(num) {
+    pdf.getPage(num).then((page) => {
+        var scale = 1.5;
+        var viewport = page.getViewport(scale);
+        pageDiv = document.createElement('div');
+        pageDiv.setAttribute('id', 'page-' + (page.pageIndex + 1));
+        pageDiv.setAttribute('style', 'position: relative');
+        container.appendChild(pageDiv);
+        var canvas = document.createElement('canvas');
+        pageDiv.appendChild(canvas);
+        var context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = view.width;
+        
+        var renderContext = {
+            canvasContext: context,
+            viewport: viewport
+        };
+        
+        page.render(renderContext).then(() => {
+            return page.getTextContent();
+        }).then((textContent) => {
+            // 创建文本图层div
+            const textLayerDiv = document.createElement('div');
+            textLayerDiv.setAttribute('class', 'textLayer');
+            // 将文本图层div添加至每页pdf的div中
+            pageDiv.appendChild(textLayerDiv);
+            
+            // 创建新的TextLayerBuilder实例
+            var textLayer = new TextLayerBuilder({
+                textLayerDiv: textLayerDiv,
+                pageIndex: page.pageIndex,
+                viewport: viewport
+            });
+            
+            textLayer.setTextContent(textContent);
+            
+            textLayer.render();
+        });
+    });
+}
+
+	</script>
+</html>
